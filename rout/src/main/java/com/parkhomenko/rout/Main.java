@@ -8,7 +8,7 @@ import com.parkhomenko.persistence.TaskDaoImpl;
  *         Created on 27.10.16.
  */
 
-public class MySqlDbTest {
+public class Main {
     public static void main(String[] args) {
         TaskDao dao;
 
