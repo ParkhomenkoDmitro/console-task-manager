@@ -2,6 +2,8 @@ package com.parkhomenko.rout;
 
 import com.parkhomenko.common.domain.Task;
 import com.parkhomenko.service.TaskService;
+import com.parkhomenko.service.exception.TaskIdNotFoundException;
+import com.parkhomenko.service.exception.TaskIsAlreadyMarkedAsCompletedException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.Scanner;
  *         Created on 26.10.16.
  */
 
-public class Analyzer {
+public class ConsoleAnalyzer {
 
     private static final String EXIT_CODE = "exit";
     private static final String ADD_CODE = "add";
@@ -125,7 +127,7 @@ public class Analyzer {
         while(true) {
 
             System.out.println("1) Back to main menu (Enter 'back')");
-            System.out.println("2) Complete task (Enter task number from table)");
+            System.out.println("2) Complete task (Enter task ID from table, for example '1')");
             System.out.println("3) Print completed task table (Enter 'completed')");
 
             String input = scanner.nextLine();
@@ -140,35 +142,43 @@ public class Analyzer {
             }
 
             if (COMPLETED_TASKS_TABLE_CODE.equals(input)) {
-                List<Task> allCompleted = service.getAllCompleted();
-
-                System.out.println("COMPLETED TASK TABLE:");
-
-                System.out.format("%10s%20s%20s%20s%n",
-                        "ID",
-                        "NAME",
-                        "EXPIRATION",
-                        "PRIORITY");
-
-                allCompleted.forEach(task -> {
-                    System.out.format("%10s%20s%20s%20s",
-                            task.getId(),
-                            task.getName(),
-                            task.getExpiration(),
-                            task.getPriority());
-
-                    System.out.println();
-                });
+                printAllCompletedTasks();
                 continue;
             }
 
             if(ValidationUtil.ValidatorEnum.ID.isValid(input)) {
                 Long id = Long.valueOf(input);
-                service.complete(id);
-                System.out.println("Done: task with id = " + id + " marked as completed!!!");
+                try {
+                    service.complete(id);
+                    System.out.println("Done: task with id = " + id + " marked as completed!!!");
+                } catch (TaskIdNotFoundException | TaskIsAlreadyMarkedAsCompletedException ex) {
+                    System.out.println(ex.getMessage());
+                }
+
                 printAllUncomplitedTasksTable();
+                continue;
             }
+
+            System.out.println("ERROR: Invalid command. Try again!!!");
         }
+    }
+
+    private void printAllCompletedTasks() {
+        List<Task> allCompleted = service.getAllCompleted();
+
+        System.out.println("COMPLETED TASK TABLE:");
+
+        System.out.format("%10s%20s%20s%20s%n",
+                "ID",
+                "NAME",
+                "EXPIRATION",
+                "PRIORITY");
+
+        allCompleted.forEach(task -> System.out.format("%10s%20s%20s%20s%n",
+                task.getId(),
+                task.getName(),
+                task.getExpiration(),
+                task.getPriority()));
     }
 
     private void printAllUncomplitedTasksTable() {

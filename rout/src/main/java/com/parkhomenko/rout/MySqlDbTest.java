@@ -12,7 +12,7 @@ public class MySqlDbTest {
     public static void main(String[] args) {
         TaskDao dao = new TaskDaoImpl();
         //TEST
-        Analyzer analyzer = ConsoleTaskManagerBuilder.build(dao);
+        ConsoleAnalyzer analyzer = ConsoleTaskManagerBuilder.build(dao);
         analyzer.run();
     }
 }

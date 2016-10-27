@@ -12,6 +12,8 @@ import java.util.List;
 public interface TaskDao {
     List<Task> getAllCompleted();
     List<Task> getAllUnCompleted();
-    void complete(Long id);
+    boolean isExist(long id);
+    boolean isCompleted(long id);
+    void complete(long id);
     void add(Task task);
 }

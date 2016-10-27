@@ -11,9 +11,9 @@ import com.parkhomenko.service.TaskServiceImpl;
 
 public class ConsoleTaskManagerBuilder {
 
-    public static Analyzer build(TaskDao dao) {
+    public static ConsoleAnalyzer build(TaskDao dao) {
         TaskService service = new TaskServiceImpl(dao);
-        Analyzer analyzer = new Analyzer();
+        ConsoleAnalyzer analyzer = new ConsoleAnalyzer();
         analyzer.setService(service);
         return analyzer;
     }

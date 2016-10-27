@@ -33,7 +33,19 @@ public class DbInMemoryTest {
             }
 
             @Override
-            public void complete(Long id) {
+            public boolean isExist(long id) {
+                List<Task> result = db.stream().filter(task -> task.getId() == id).collect(Collectors.toList());
+                return !result.isEmpty();
+            }
+
+            @Override
+            public boolean isCompleted(long id) {
+                List<Task> result = db.stream().filter(task -> task.getId() == id).collect(Collectors.toList());
+                return result.get(0).getCompleted();
+            }
+
+            @Override
+            public void complete(long id) {
                 boolean isExist = false;
 
                 for (Task task : db) {
@@ -52,10 +64,8 @@ public class DbInMemoryTest {
             @Override
             public void add(Task task) {
                 task.setId(1L); //TODO remove late
-                task.setCompleted(false);
                 db.add(task);
             }
-
         };
 
         //ADD one test task
@@ -68,7 +78,7 @@ public class DbInMemoryTest {
         dao.add(one);
 
         //TEST
-        Analyzer analyzer = ConsoleTaskManagerBuilder.build(dao);
+        ConsoleAnalyzer analyzer = ConsoleTaskManagerBuilder.build(dao);
         analyzer.run();
     }
 }

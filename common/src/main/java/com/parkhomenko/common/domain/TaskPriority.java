@@ -6,5 +6,5 @@ package com.parkhomenko.common.domain;
  */
 
 public enum TaskPriority {
-    LOW, MIDDLE, HEIGHT;
+    LOW, MIDDLE, HEIGHT; //WARNING: DO NOT CHANGE ORDER OF THIS VALUES - IN CURRENT IMPL IT IS MATTER
 }

@@ -2,6 +2,8 @@ package com.parkhomenko.service;
 
 import com.parkhomenko.common.domain.Task;
 import com.parkhomenko.persistence.TaskDao;
+import com.parkhomenko.service.exception.TaskIdNotFoundException;
+import com.parkhomenko.service.exception.TaskIsAlreadyMarkedAsCompletedException;
 
 import java.util.List;
 
@@ -29,12 +31,21 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public void complete(Long id) {
+    public void complete(long id) throws TaskIdNotFoundException, TaskIsAlreadyMarkedAsCompletedException {
+        if(!dao.isExist(id)) {
+            throw new TaskIdNotFoundException("ERROR: Task with id = " + id + " does not exist!!!");
+        }
+
+        if(dao.isCompleted(id)) {
+            throw new TaskIsAlreadyMarkedAsCompletedException("ERROR: Task with id = " + id + " is already marked as completed!!!");
+        }
+
         dao.complete(id);
     }
 
     @Override
     public void add(Task task) {
+        task.setCompleted(false);
         dao.add(task);
     }
 }

@@ -5,9 +5,11 @@ import com.parkhomenko.common.domain.TaskPriority;
 
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * @author Dmytro Parkhomenko
@@ -47,11 +49,90 @@ public class TaskDaoImpl implements TaskDao {
 
     @Override
     public List<Task> getAllCompleted() {
-        return null;
+        return list("SELECT id, name, expiration, priority, iscompleted FROM task WHERE iscompleted IS TRUE");
     }
 
     @Override
     public List<Task> getAllUnCompleted() {
+        return list("SELECT id, name, expiration, priority, iscompleted FROM task WHERE iscompleted IS FALSE");
+    }
+
+    @Override
+    public boolean isExist(long id) {
+        List<Task> list = list("SELECT id, name, expiration, priority, iscompleted FROM task WHERE id = " + id);
+        return !list.isEmpty();
+    }
+
+    @Override
+    public boolean isCompleted(long id) {
+        List<Task> list = list("SELECT id, name, expiration, priority, iscompleted FROM task WHERE iscompleted IS TRUE AND id = " + id);
+        return !list.isEmpty();
+    }
+
+    @Override
+    public void complete(long id) {
+        crud(() -> "UPDATE task SET iscompleted = true WHERE id = " + id);
+    }
+
+    @Override
+    public void add(Task task) {
+        crud(() -> {
+            String sqlQuery = "INSERT INTO task (name, expiration, priority, iscompleted) " +
+                    "VALUES ($NAME, $EXPIRATION, $PRIORITY, $ISCOMPLETED)";
+
+            //NAME
+            sqlQuery = sqlQuery.replace("$NAME", "'" + task.getName() + "'");
+
+            //EXPIRATION
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            String date = task.getExpiration().format(formatter);
+            sqlQuery = sqlQuery.replace("$EXPIRATION", "'" + date + "'");
+
+            //PRIORITY
+            sqlQuery = sqlQuery.replace("$PRIORITY", Integer.toString(task.getPriority().ordinal()));
+
+            //ISCOMPLETED
+            sqlQuery = sqlQuery.replace("$ISCOMPLETED", task.getCompleted().toString());
+
+            return sqlQuery;
+        });
+    }
+
+    private void crud(Supplier<String> sqlQuerySupplier) {
+        Connection connection = null;
+        Statement statement = null;
+
+        try {
+            connection = DriverManager.getConnection(dbUrl, user, pwd);
+            statement = connection.createStatement();
+            statement.executeUpdate(sqlQuerySupplier.get());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if(Objects.nonNull(statement))
+                    statement.close();
+            } catch(SQLException ex) {
+                ex.printStackTrace();
+            }
+
+            try {
+                if(Objects.nonNull(connection))
+                    connection.close();
+            } catch(SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     *
+     * @param sqlQuery to execute: MUST select all table columns,
+     *                 if not - you will get java.sql.SQLException that will be caught
+     *                 and exception stack trace that will be printed for you
+     * @return List of tasks
+     */
+    private List<Task> list(String sqlQuery) {
         Connection connection = null;
         Statement statement = null;
         List<Task> tasks = new ArrayList<>();
@@ -59,7 +140,7 @@ public class TaskDaoImpl implements TaskDao {
         try {
             connection = DriverManager.getConnection(dbUrl, user, pwd);
             statement = connection.createStatement();
-            String sqlQuery = "SELECT id, name, expiration, priority, iscompleted FROM task WHERE iscompleted IS FALSE";
+
             ResultSet rs = statement.executeQuery(sqlQuery);
 
             while(rs.next()) {
@@ -84,25 +165,18 @@ public class TaskDaoImpl implements TaskDao {
             try {
                 if(Objects.nonNull(statement))
                     statement.close();
-            } catch(SQLException se) {}
+            } catch(SQLException ex) {
+                ex.printStackTrace();
+            }
+
             try {
                 if(Objects.nonNull(connection))
                     connection.close();
-            }catch(SQLException se){
-                se.printStackTrace();
+            } catch(SQLException ex) {
+                ex.printStackTrace();
             }
         }
 
         return tasks;
-    }
-
-    @Override
-    public void complete(Long id) {
-
-    }
-
-    @Override
-    public void add(Task task) {
-
     }
 }

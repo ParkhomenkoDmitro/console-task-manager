@@ -1,6 +1,8 @@
 package com.parkhomenko.service;
 
 import com.parkhomenko.common.domain.Task;
+import com.parkhomenko.service.exception.TaskIdNotFoundException;
+import com.parkhomenko.service.exception.TaskIsAlreadyMarkedAsCompletedException;
 
 import java.util.List;
 
@@ -12,6 +14,6 @@ import java.util.List;
 public interface TaskService {
     List<Task> getAllCompleted();
     List<Task> getAllUnCompleted();
-    void complete(Long id);
+    void complete(long id) throws TaskIdNotFoundException, TaskIsAlreadyMarkedAsCompletedException;
     void add(Task task);
 }
