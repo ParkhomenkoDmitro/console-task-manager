@@ -35,6 +35,15 @@ public class TaskDaoImpl implements TaskDao {
         }
     }
 
+    public TaskDaoImpl() {
+    }
+
+    public TaskDaoImpl(String dbUrl, String user, String pwd) {
+        this.dbUrl = dbUrl;
+        this.user = user;
+        this.pwd = pwd;
+    }
+
     public void setDbUrl(String dbUrl) {
         this.dbUrl = dbUrl;
     }
