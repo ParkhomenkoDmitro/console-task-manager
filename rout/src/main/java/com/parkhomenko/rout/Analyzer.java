@@ -1,11 +1,9 @@
 package com.parkhomenko.rout;
 
 import com.parkhomenko.common.domain.Task;
-import com.parkhomenko.common.domain.TaskPriority;
 import com.parkhomenko.service.TaskService;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
 import java.util.Scanner;
@@ -17,10 +15,10 @@ import java.util.Scanner;
 
 public class Analyzer {
 
-    public static final String EXIT_CODE = "exit";
-    public static final String ADD_CODE = "add";
-    public static final String PRINT_CODE = "print";
-    public static final String BACK_CODE = "back";
+    private static final String EXIT_CODE = "exit";
+    private static final String ADD_CODE = "add";
+    private static final String PRINT_CODE = "print";
+    private static final String BACK_CODE = "back";
     private static final String COMPLETED_TASKS_TABLE_CODE = "completed";
 
     private TaskService service;
@@ -63,6 +61,8 @@ public class Analyzer {
                 System.out.println("Exit!");
                 break;
             }
+
+            System.out.println("ERROR: Invalid command. Try again!!!");
         }
 
         scanner.close();
@@ -74,29 +74,27 @@ public class Analyzer {
         String input;
 
         //NAME
-        input = inputField(scanner, ValidationUtil.ValidatorEnum.NAME, "Enter Name:");
+        input = inputField(scanner, ValidationUtil.ValidatorEnum.NAME, "Enter Name (allowed: any characters, any digits, any punctuations and any kind of whitespace):");
         if(Objects.isNull(input)) {
             return;
         }
         task.setName(input);
 
         //Expiration
-        input = inputField(scanner, ValidationUtil.ValidatorEnum.EXPIRATION, "Enter Expiration:");
+        input = inputField(scanner, ValidationUtil.ValidatorEnum.EXPIRATION, "Enter Expiration (format: dd MM yyyy):");
         if(Objects.isNull(input)) {
             return;
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MM yyyy");
-        LocalDate date = LocalDate.parse(input, formatter);
-        task.setExpiration(date);
+        task.setExpiration(Utils.convertToDate(input));
 
         //PRIORITY
-        input = inputField(scanner, ValidationUtil.ValidatorEnum.PRIORITY, "Enter Priority:");
+        input = inputField(scanner, ValidationUtil.ValidatorEnum.PRIORITY, "Enter Priority (LOW - 0, MIDDLE - 1, HEIGHT - 2):");
         if(Objects.isNull(input)) {
             return;
         }
-        TaskPriority priority = TaskPriority.valueOf(input);
-        task.setPriority(priority);
+        task.setPriority(Utils.convertToPriority(input));
 
+        //save task
         service.add(task);
 
         System.out.println("Done: new task added!!!");
@@ -116,7 +114,7 @@ public class Analyzer {
             if(validator.isValid(input)) {
                 return input;
             } else {
-                System.out.println("ERROR: Invalid data format. Try again!!!");
+                System.out.println("ERROR: Invalid field format. Try again!!!");
             }
         }
     }
